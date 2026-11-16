@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Roblox Developer Toolkit V4</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <header id="top">
+      <button id="menuBtn" class="btn ico sm" aria-label="القائمة">☰</button>
+      <div class="brand">
+        <div>
+          Roblox Toolkit V4
+          <small>Cyberpunk Neon</small>
+        </div>
+      </div>
+      <div class="grow"></div>
+      <div class="row">
+        <button class="btn sm" data-t="default">Cyan</button>
+        <button class="btn sm" data-t="violet">Violet</button>
+        <button class="btn sm" data-t="matrix">Matrix</button>
+        <button class="btn sm" data-t="ember">Ember</button>
+      </div>
+    </header>
+
+    <aside id="side">
+      <div class="grp">الأقسام</div>
+      <button class="nav on" data-v="home">الرئيسية</button>
+      <button class="nav" data-v="editor">المحرر</button>
+      <button class="nav" data-v="notes">ملاحظات</button>
+    </aside>
+
+    <main id="main">
+      <section id="view-home" class="view on">
+        <div class="pagehead">
+          <h2>لوحة الأدوات</h2>
+          <span class="chip"><span class="dot"></span> جاهز</span>
+        </div>
+
+        <div class="hero">
+          <div class="card heroMain">
+            <h1>Roblox Developer Toolkit V4</h1>
+            <p class="muted">واجهة ويب ثابتة تعمل مباشرة في المتصفح.</p>
+            <div class="row wrap" style="margin-top:12px">
+              <button class="btn pri" onclick="go('editor')">فتح المحرر</button>
+              <button class="btn" onclick="go('notes')">الملاحظات</button>
+            </div>
+          </div>
+
+          <div class="card col">
+            <div class="stat">
+              <b id="st-notes">0</b>
+              <span>ملاحظات محفوظة محلياً</span>
+            </div>
+            <div class="stat">
+              <b>4</b>
+              <span>سمات لونية جاهزة</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-editor" class="view">
+        <div class="pagehead">
+          <h2>المحرر</h2>
+          <button class="btn sm" id="copyBtn">نسخ</button>
+        </div>
+        <div class="card">
+          <textarea id="area" rows="12">-- اكتب كودك هنا
+print("Hello from Roblox Toolkit V4!")</textarea>
+        </div>
+      </section>
+
+      <section id="view-notes" class="view">
+        <div class="pagehead">
+          <h2>الملاحظات</h2>
+        </div>
+        <div class="card col">
+          <div class="row">
+            <input id="nInput" type="text" placeholder="اكتب ملاحظة..." />
+            <button class="btn pri" id="nAdd">إضافة</button>
+          </div>
+          <div id="nList" class="list"></div>
+        </div>
+      </section>
+    </main>
+
+    <nav id="bottom">
+      <button class="on" data-v="home">الرئيسية</button>
+      <button data-v="editor">المحرر</button>
+      <button data-v="notes">ملاحظات</button>
+    </nav>
+  </div>
+
+  <div id="scrim"></div>
+
+  <script>
+    function setTheme(t) {
+      if (t === "default") document.body.removeAttribute("data-theme");
+      else document.body.setAttribute("data-theme", t);
+      localStorage.setItem("tk_theme", t);
+    }
+    document.querySelectorAll("[data-t]").forEach(b =>
+      b.addEventListener("click", () => setTheme(b.dataset.t))
+    );
+
+    function go(v) {
+      document.querySelectorAll(".view").forEach(s => s.classList.remove("on"));
+      const el = document.getElementById("view-" + v);
+      if (el) el.classList.add("on");
+      document.querySelectorAll("#side .nav, #bottom button").forEach(b =>
+        b.classList.toggle("on", b.dataset.v === v)
+      );
+      document.body.classList.remove("drawer");
+    }
+    document.querySelectorAll("[data-v]").forEach(b =>
+      b.addEventListener("click", () => go(b.dataset.v))
+    );
+
+    document.getElementById("menuBtn").addEventListener("click", () =>
+      document.body.classList.toggle("drawer")
+    );
+    document.getElementById("scrim").addEventListener("click", () =>
+      document.body.classList.remove("drawer")
+    );
+
+    document.getElementById("copyBtn").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(document.getElementById("area").value);
+        alert("تم النسخ");
+      } catch {
+        alert("تعذر النسخ");
+      }
+    });
+
+    const nList = document.getElementById("nList");
+    const nInput = document.getElementById("nInput");
+    const stNotes = document.getElementById("st-notes");
+    let notes = JSON.parse(localStorage.getItem("tk_notes") || "[]");
+
+    function drawNotes() {
+      stNotes.textContent = notes.length;
+      nList.innerHTML = notes.length
+        ? notes.map((x, i) => `<div class="item"><div><div class="tt">${x}</div></div><button class="btn dng sm" onclick="rmNote(${i})">حذف</button></div>`).join("")
+        : `<div class="empty">لا توجد ملاحظات</div>`;
+      localStorage.setItem("tk_notes", JSON.stringify(notes));
+    }
+    function rmNote(i) {
+      notes.splice(i, 1);
+      drawNotes();
+    }
+    document.getElementById("nAdd").addEventListener("click", () => {
+      const v = nInput.value.trim();
+      if (!v) return;
+      notes.unshift(v);
+      nInput.value = "";
+      drawNotes();
+    });
+
+    const saved = localStorage.getItem("tk_theme");
+    if (saved) setTheme(saved);
+    drawNotes();
+  </script>
+</body>
+</html>
